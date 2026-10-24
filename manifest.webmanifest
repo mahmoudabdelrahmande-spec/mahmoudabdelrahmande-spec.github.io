@@ -1,0 +1,20 @@
+{
+  "name": "Wortkarten – Deutsch lernen",
+  "short_name": "Wortkarten",
+  "description": "Deutsch-Vokabeln lernen mit Karteikarten, der/die/das-Farben, arabischen Bedeutungen, Artikel-Quiz und Schreibübung.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECEFF3",
+  "theme_color": "#17202B",
+  "lang": "de",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17202B">
+<meta name="description" content="Deutsch-Vokabeln lernen mit Karteikarten, der/die/das-Farben und arabischen Bedeutungen.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Wortkarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Noto+Naskh+Arabic:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow study column, like a stack of index cards on a desk; article colours carry the meaning */
+:root{
+  --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F5F7FA; --ink:#17202B; --muted:#5A6573; --line:#D6DCE3;
+  --der:#2463C7; --die:#C3303B; --das:#1D8549;
+  --der-soft:#E3ECFA; --die-soft:#FAE5E7; --das-soft:#E1F3E8;
+  --ok:#1D8549; --warn:#B7700A; --bad:#C3303B;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-ar:"Noto Naskh Arabic", "Geeza Pro", "Arabic Typesetting", serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151B; --surface:#1A2029; --sunk:#151A22; --ink:#E7EBF0; --muted:#98A3B1; --line:#2B3440;
+  --der:#74A3F2; --die:#F27D86; --das:#5FC68C;
+  --der-soft:#1C2A42; --die-soft:#3A1E22; --das-soft:#18322A;
+  --ok:#5FC68C; --warn:#E3A84A; --bad:#F27D86; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151B; --surface:#1A2029; --sunk:#151A22; --ink:#E7EBF0; --muted:#98A3B1; --line:#2B3440;
+  --der:#74A3F2; --die:#F27D86; --das:#5FC68C;
+  --der-soft:#1C2A42; --die-soft:#3A1E22; --das-soft:#18322A;
+  --ok:#5FC68C; --warn:#E3A84A; --bad:#F27D86; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-0.01em}
+h1{font-size:2rem;font-weight:800}
+h2{font-size:1.25rem;font-weight:700}
+.ar{font-family:var(--f-ar);direction:rtl}
+.muted{color:var(--muted)}
+.small{font-size:.875rem}
+.label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:700}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,.flash:focus-visible{outline:3px solid var(--der);outline-offset:2px}
+.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.primary:hover{opacity:.9;border-color:var(--ink)}
+.ghost{background:transparent;border-color:transparent;padding:8px 10px}
+.ghost:hover{background:var(--sunk);border-color:transparent}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.streak{display:flex;align-items:baseline;gap:6px;font-family:var(--f-display);font-weight:700}
+.streak b{font-size:1.5rem;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-weight:700}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:6px 12px;font-size:.875rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* deck list */
+.decks{display:flex;flex-direction:column;gap:12px}
+.deck{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.lvl{grid-row:span 3;font-family:var(--f-display);font-weight:800;font-size:1.25rem;width:52px;height:52px;border-radius:12px;display:grid;place-items:center;background:var(--sunk);border:1px solid var(--line)}
+.deck h3{font-size:1.125rem;font-weight:700}
+.counts{display:flex;gap:14px;flex-wrap:wrap;font-size:.875rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts strong{color:var(--ink)}
+.counts .due strong{color:var(--warn)}
+.gbar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk);max-width:220px;margin-top:4px}
+.gbar i{display:block;height:100%}
+.deck .actions{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.deck .actions button{font-size:.9rem;padding:8px 12px}
+
+/* study card */
+.bar{display:flex;align-items:center;gap:12px}
+.prog{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);transition:width .25s}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.875rem;min-width:52px;text-align:right}
+.flash{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 22px;min-height:300px;display:flex;flex-direction:column;gap:18px;cursor:pointer;box-shadow:0 1px 0 var(--line),0 10px 30px -18px rgba(0,0,0,.35)}
+.flash.der{background:linear-gradient(var(--der-soft),var(--surface) 140px)}
+.flash.die{background:linear-gradient(var(--die-soft),var(--surface) 140px)}
+.flash.das{background:linear-gradient(var(--das-soft),var(--surface) 140px)}
+.front{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-top:20px}
+.word{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,8vw,2.75rem);line-height:1.1;overflow-wrap:anywhere}
+.art{font-weight:800}
+.art.der{color:var(--der)} .art.die{color:var(--die)} .art.das{color:var(--das)}
+.prompt-ar{font-size:2rem;line-height:1.6}
+.prompt-en{font-size:1.125rem;color:var(--muted)}
+.tap{color:var(--muted);font-size:.875rem;margin-top:auto;text-align:center}
+.back{border-top:1px dashed var(--line);padding-top:18px;display:grid;gap:12px}
+.back dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;align-items:baseline}
+.back dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.back dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.back .ar{font-size:1.25rem}
+.ex{font-style:italic}
+.speak{align-self:center;font-size:.875rem;padding:6px 12px}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grades button{display:flex;flex-direction:column;align-items:center;gap:0;padding:10px 6px;line-height:1.3}
+.grades small{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.grades .ar{font-size:.8rem;font-weight:400}
+.g0{border-color:var(--bad)} .g0 span:first-child{color:var(--bad)}
+.g1 span:first-child{color:var(--warn)}
+.g2 span:first-child{color:var(--ok)}
+.keys{text-align:center}
+
+/* quiz */
+.qword{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,9vw,3rem);text-align:center;overflow-wrap:anywhere}
+.qword .blank{display:inline-block;min-width:2.6em;border-bottom:4px solid var(--line);margin-right:.3em;color:transparent}
+.qword .blank.show{color:inherit;border-color:transparent}
+.abtn{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.abtn button{font-family:var(--f-display);font-size:1.5rem;font-weight:800;padding:18px 0;border-width:2px}
+.abtn .der{color:var(--der);border-color:var(--der)} .abtn .die{color:var(--die);border-color:var(--die)} .abtn .das{color:var(--das);border-color:var(--das)}
+.abtn .der.on{background:var(--der);color:var(--surface)} .abtn .die.on{background:var(--die);color:var(--surface)} .abtn .das.on{background:var(--das);color:var(--surface)}
+.abtn button:disabled{cursor:default;opacity:.45}
+.abtn button.on:disabled{opacity:1}
+.fb{min-height:1.6em;text-align:center;font-weight:700}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)} .fb.warn{color:var(--warn)}
+.big-score{font-family:var(--f-display);font-weight:800;font-size:3.5rem;font-variant-numeric:tabular-nums;line-height:1}
+
+/* typing */
+.tin{width:100%;padding:14px 16px;font-size:1.25rem;border:2px solid var(--line);border-radius:12px;background:var(--surface)}
+.umlauts{display:flex;gap:6px;flex-wrap:wrap}
+.umlauts button{padding:6px 12px;font-size:1rem}
+
+/* import */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input,.field select,.field textarea{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--sunk)}
+textarea{min-height:200px;resize:vertical;font-size:.95rem;line-height:1.6}
+code{background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.85rem;overflow-wrap:anywhere}
+.note{font-size:.875rem;color:var(--muted)}
+.done{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;padding:30px 0}
+@media (max-width:420px){.grades button{padding:10px 2px;font-size:.9rem}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.pop{animation:pop .18s ease-out}
+@keyframes pop{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- Data: [Artikel, Wort, Plural/Formen, Englisch, Arabisch, Beispiel] ---------- */
+const BUILTIN = [
+ {id:"a1-alltag", level:"A1", title:"Familie & Alltag", cards:[
+  ["der","Vater","die Väter","father","الأب","Mein Vater arbeitet in Kairo."],
+  ["die","Mutter","die Mütter","mother","الأم","Meine Mutter kocht sehr gern."],
+  ["das","Kind","die Kinder","child","الطفل","Das Kind spielt im Garten."],
+  ["der","Bruder","die Brüder","brother","الأخ","Mein Bruder ist 20 Jahre alt."],
+  ["die","Schwester","die Schwestern","sister","الأخت","Ich habe zwei Schwestern."],
+  ["die","Wohnung","die Wohnungen","apartment","الشقة","Unsere Wohnung hat drei Zimmer."],
+  ["das","Frühstück","die Frühstücke","breakfast","الفطور","Zum Frühstück esse ich Brot mit Käse."],
+  ["der","Tisch","die Tische","table","الطاولة","Das Buch liegt auf dem Tisch."],
+  ["die","Uhr","die Uhren","clock, watch","الساعة","Wie viel Uhr ist es?"],
+  ["das","Buch","die Bücher","book","الكتاب","Ich lese gerade ein spannendes Buch."],
+  ["der","Stuhl","die Stühle","chair","الكرسي","Bitte nimm dir einen Stuhl."],
+  ["die","Tasche","die Taschen","bag","الحقيبة","Meine Tasche ist schwer."],
+  ["das","Fenster","die Fenster","window","النافذة","Kannst du bitte das Fenster öffnen?"],
+  ["","wohnen","wohnt – wohnte – hat gewohnt","to live (reside)","يسكن","Ich wohne in Alexandria."],
+  ["","kaufen","kauft – kaufte – hat gekauft","to buy","يشتري","Wir kaufen Obst auf dem Markt."]
+ ]},
+ {id:"a2-reisen", level:"A2", title:"Stadt & Reisen", cards:[
+  ["der","Bahnhof","die Bahnhöfe","train station","محطة القطار","Der Zug fährt um 8 Uhr vom Bahnhof ab."],
+  ["die","Haltestelle","die Haltestellen","stop (bus, tram)","محطة الحافلة","Wo ist die nächste Haltestelle?"],
+  ["das","Flugzeug","die Flugzeuge","airplane","الطائرة","Das Flugzeug landet in Frankfurt."],
+  ["der","Fahrplan","die Fahrpläne","timetable","جدول المواعيد","Laut Fahrplan kommt der Bus gleich."],
+  ["die","Fahrkarte","die Fahrkarten","ticket","التذكرة","Ich brauche eine Fahrkarte nach Berlin."],
+  ["das","Gepäck","nur Singular","luggage","الأمتعة","Haben Sie viel Gepäck dabei?"],
+  ["der","Urlaub","die Urlaube","vacation","الإجازة","Im Sommer machen wir Urlaub am Meer."],
+  ["die","Reise","die Reisen","trip, journey","الرحلة","Wie war deine Reise?"],
+  ["das","Hotel","die Hotels","hotel","الفندق","Das Hotel liegt direkt am Strand."],
+  ["der","Termin","die Termine","appointment","الموعد","Ich habe morgen einen Termin beim Arzt."],
+  ["die","Apotheke","die Apotheken","pharmacy","الصيدلية","Die Apotheke ist bis 20 Uhr geöffnet."],
+  ["das","Rathaus","die Rathäuser","town hall","مبنى البلدية","Das Rathaus steht am Marktplatz."],
+  ["","umsteigen","steigt um – stieg um – ist umgestiegen","to change (trains)","يغيّر القطار","In Köln müssen Sie umsteigen."],
+  ["","buchen","bucht – buchte – hat gebucht","to book","يحجز","Ich habe das Zimmer online gebucht."]
+ ]},
+ {id:"b1-arbeit", level:"B1", title:"Arbeit & Beruf", cards:[
+  ["der","Arbeitgeber","die Arbeitgeber","employer","صاحب العمل","Mein Arbeitgeber bezahlt die Fortbildung."],
+  ["die","Bewerbung","die Bewerbungen","job application","طلب التوظيف","Ich schicke meine Bewerbung per E-Mail."],
+  ["das","Vorstellungsgespräch","die Vorstellungsgespräche","job interview","مقابلة العمل","Das Vorstellungsgespräch ist am Montag."],
+  ["der","Lebenslauf","die Lebensläufe","CV, résumé","السيرة الذاتية","Bitte legen Sie Ihren Lebenslauf bei."],
+  ["die","Erfahrung","die Erfahrungen","experience","الخبرة","Sie hat viel Erfahrung im Verkauf."],
+  ["das","Gehalt","die Gehälter","salary","الراتب","Das Gehalt wird am Monatsende überwiesen."],
+  ["der","Vertrag","die Verträge","contract","العقد","Der Vertrag läuft zwei Jahre."],
+  ["die","Besprechung","die Besprechungen","meeting","الاجتماع","Die Besprechung dauert eine Stunde."],
+  ["das","Unternehmen","die Unternehmen","company","الشركة","Das Unternehmen hat 200 Mitarbeiter."],
+  ["der","Kollege","die Kollegen","colleague","الزميل","Mein Kollege hilft mir oft."],
+  ["die","Verantwortung","nur Singular","responsibility","المسؤولية","Sie trägt die Verantwortung für das Projekt."],
+  ["","kündigen","kündigt – kündigte – hat gekündigt","to resign, to give notice","يستقيل","Er hat seine Stelle gekündigt."],
+  ["","sich bewerben (um)","bewirbt sich – bewarb sich – hat sich beworben","to apply (for)","يتقدّم لوظيفة","Ich bewerbe mich um eine Stelle als Lehrer."]
+ ]},
+ {id:"b2-umwelt", level:"B2", title:"Umwelt & Gesellschaft", cards:[
+  ["der","Klimawandel","nur Singular","climate change","تغيّر المناخ","Der Klimawandel betrifft alle Länder."],
+  ["die","Nachhaltigkeit","nur Singular","sustainability","الاستدامة","Viele Firmen achten heute auf Nachhaltigkeit."],
+  ["das","Abgas","die Abgase","exhaust fumes","غازات العادم","Autos stoßen schädliche Abgase aus."],
+  ["der","Verbrauch","nur Singular","consumption","الاستهلاك","Der Verbrauch von Plastik muss sinken."],
+  ["die","Maßnahme","die Maßnahmen","measure, step","الإجراء","Die Regierung plant neue Maßnahmen."],
+  ["das","Bewusstsein","nur Singular","awareness","الوعي","Das Bewusstsein für Umweltschutz wächst."],
+  ["der","Rohstoff","die Rohstoffe","raw material","المادة الخام","Erdöl ist ein wichtiger Rohstoff."],
+  ["die","Gesellschaft","die Gesellschaften","society","المجتمع","Die Gesellschaft wird immer älter."],
+  ["das","Ehrenamt","die Ehrenämter","volunteer work","العمل التطوعي","Sie engagiert sich in einem Ehrenamt."],
+  ["der","Vorteil","die Vorteile","advantage","الميزة","Ein Vorteil ist die gute Lage."],
+  ["die","Auswirkung","die Auswirkungen","effect, impact","التأثير","Das hat negative Auswirkungen auf die Umwelt."],
+  ["","verzichten (auf)","verzichtet – verzichtete – hat verzichtet","to do without","يستغني عن","Ich verzichte auf Fleisch."],
+  ["","beitragen (zu)","trägt bei – trug bei – hat beigetragen","to contribute (to)","يساهم في","Jeder kann zum Umweltschutz beitragen."]
+ ]}
+];
+
+/* ---------- Storage (this device only) ---------- */
+const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let progress=store.get("wk_progress",{});
+let custom=store.get("wk_custom",[]);
+let settings=store.get("wk_settings",{dir:"de"});
+let streak=store.get("wk_streak",{last:null,count:0});
+
+const DAY=864e5, NEW_PER_SESSION=10;
+const app=document.getElementById("app");
+const canSpeak=("speechSynthesis" in window)&&typeof SpeechSynthesisUtterance!=="undefined";
+let view={name:"home"};
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const decks=()=>BUILTIN.concat(custom);
+const findDeck=id=>decks().find(d=>d.id===id);
+const toCard=(deck,c)=>({key:deck.id+":"+c[1],art:c[0]||"",word:c[1],pl:c[2]||"",en:c[3]||"",ar:c[4]||"",ex:c[5]||""});
+const cardsOf=deck=>deck.cards.map(c=>toCard(deck,c));
+const full=c=>(c.art?c.art+" ":"")+c.word;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function speak(t){if(!canSpeak)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="de-DE";u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+
+function stats(deck){
+  const now=Date.now();let n=0,d=0,l=0,g={der:0,die:0,das:0,other:0};
+  for(const c of cardsOf(deck)){const s=progress[c.key];if(!s)n++;else{if(s.d<=now)d++;if(s.r>0&&s.i>=1)l++}g[c.art in g?c.art:"other"]++}
+  return {n,d,l,total:deck.cards.length,g};
+}
+
+/* ---------- Spaced repetition (simplified SM-2) ---------- */
+function schedule(prev,grade){
+  const s=prev?{...prev}:{i:0,e:2.5,r:0,d:0};const now=Date.now();
+  if(grade===0){s.r=0;s.i=0;s.e=Math.max(1.3,s.e-.2);s.d=now+60e3;return s}
+  let i;
+  if(grade===1){i=s.r===0?1:Math.max(1,Math.round(s.i*1.2));s.e=Math.max(1.3,s.e-.15)}
+  else if(grade===2){i=s.r===0?1:s.r===1?3:Math.round(s.i*s.e)}
+  else{i=s.r===0?3:Math.round(Math.max(s.i,1)*s.e*1.3);s.e+=.15}
+  s.i=Math.max(1,i);s.r++;s.d=now+s.i*DAY;return s;
+}
+const ivLabel=s=>s.i===0?"< 1 Min":s.i<30?s.i+" T.":s.i<365?Math.round(s.i/30)+" Mon.":(s.i/365).toFixed(1)+" J.";
+function bumpStreak(){
+  const t=new Date(),today=t.toDateString();
+  if(streak.last===today)return;
+  const y=new Date(t.getTime()-DAY).toDateString();
+  streak={last:today,count:streak.last===y?streak.count+1:1};store.set("wk_streak",streak);
+}
+const streakNow=()=>{const t=new Date().toDateString(),y=new Date(Date.now()-DAY).toDateString();return (streak.last===t||streak.last===y)?streak.count:0};
+
+/* ---------- Home ---------- */
+function renderHome(){
+  const list=decks().map(dk=>{
+    const s=stats(dk),tot=s.total||1,isCustom=custom.some(c=>c.id===dk.id),nouns=s.g.der+s.g.die+s.g.das;
+    return `<article class="deck">
+      <div class="lvl">${esc(dk.level)}</div>
+      <h3>${esc(dk.title)}</h3>
+      <div class="counts"><span><strong>${s.total}</strong> Wörter</span><span class="due"><strong>${s.d}</strong> fällig</span><span><strong>${s.n}</strong> neu</span><span><strong>${s.l}</strong> gelernt</span></div>
+      <div class="gbar" title="Artikel-Verteilung: ${s.g.der}× der, ${s.g.die}× die, ${s.g.das}× das">
+        <i style="width:${s.g.der/tot*100}%;background:var(--der)"></i><i style="width:${s.g.die/tot*100}%;background:var(--die)"></i><i style="width:${s.g.das/tot*100}%;background:var(--das)"></i></div>
+      <div class="actions">
+        <button class="primary" data-act="study" data-id="${esc(dk.id)}">Lernen${s.d+Math.min(s.n,NEW_PER_SESSION)?" ("+(s.d+Math.min(s.n,NEW_PER_SESSION))+")":""}</button>
+        ${nouns?`<button data-act="quiz" data-id="${esc(dk.id)}">der/die/das-Quiz</button>`:""}
+        <button data-act="type" data-id="${esc(dk.id)}">Schreiben</button>
+        ${isCustom?`<button class="ghost" data-act="copy" data-id="${esc(dk.id)}">Liste kopieren</button><button class="ghost" data-act="del" data-id="${esc(dk.id)}">Löschen</button>`:""}
+      </div></article>`}).join("");
+  app.innerHTML=`
+   <header class="top">
+     <div><div class="label">Deutsch lernen · كروت المفردات</div><h1>Wortkarten</h1></div>
+     <div class="streak"><b>${streakNow()}</b><span class="muted small">${streakNow()===1?"Tag":"Tage"} in Folge</span></div>
+   </header>
+   <div class="row between">
+     <div class="legend"><span><i class="dot" style="background:var(--der)"></i><span class="art der">der</span> maskulin</span><span><i class="dot" style="background:var(--die)"></i><span class="art die">die</span> feminin</span><span><i class="dot" style="background:var(--das)"></i><span class="art das">das</span> neutral</span></div>
+     <div class="seg" role="group" aria-label="Lernrichtung">
+       <button data-act="dir" data-v="de" aria-pressed="${settings.dir==="de"}">DE → AR</button>
+       <button data-act="dir" data-v="ar" aria-pressed="${settings.dir==="ar"}">AR → DE</button>
+     </div>
+   </div>
+   <section class="decks">${list}</section>
+   <button data-act="import">+ Eigene Wortliste hinzufügen</button>
+   <p class="note">Funktioniert auch offline. Dein Lernfortschritt wird nur auf diesem Gerät gespeichert. Tastatur: Leertaste = umdrehen, 1–4 = bewerten.</p>`;
+}
+
+/* ---------- Study ---------- */
+function startStudy(id){
+  const dk=findDeck(id),now=Date.now(),cs=cardsOf(dk);
+  const due=cs.filter(c=>progress[c.key]&&progress[c.key].d<=now);
+  const fresh=cs.filter(c=>!progress[c.key]).slice(0,NEW_PER_SESSION);
+  view={name:"study",deck:dk,queue:shuffle(due).concat(shuffle(fresh)),pos:0,flipped:false,done:0,total:due.length+fresh.length};
+  renderStudy();
+}
+function cardBody(c,flipped){
+  const front=settings.dir==="de"
+    ?`<div class="word">${c.art?`<span class="art ${c.art}">${c.art}</span> `:""}${esc(c.word)}</div>${c.art?"":`<div class="label">Verb / Ausdruck</div>`}`
+    :`<div class="prompt-ar ar" lang="ar">${esc(c.ar)}</div><div class="prompt-en">${esc(c.en)}</div>`;
+  const backHead=settings.dir==="ar"?`<div class="word" style="text-align:center">${c.art?`<span class="art ${c.art}">${c.art}</span> `:""}${esc(c.word)}</div>`:"";
+  const back=flipped?`<div class="back pop">${backHead}
+      <dl>
+        ${settings.dir==="de"?`<dt>Arabisch</dt><dd class="ar" lang="ar">${esc(c.ar)}</dd><dt>Englisch</dt><dd>${esc(c.en)}</dd>`:""}
+        ${c.pl?`<dt>${c.art?"Plural":"Formen"}</dt><dd>${esc(c.pl)}</dd>`:""}
+        ${c.ex?`<dt>Beispiel</dt><dd class="ex">${esc(c.ex)}</dd>`:""}
+      </dl></div>`:"";
+  return `<div class="front">${front}${canSpeak&&(settings.dir==="de"||flipped)?`<button class="speak" data-act="speak">🔊 Anhören</button>`:""}</div>${back}${flipped?"":`<div class="tap">Tippen zum Umdrehen</div>`}`;
+}
+function renderStudy(){
+  const v=view;
+  if(v.pos>=v.queue.length){
+    app.innerHTML=`<div class="done"><div class="label">${esc(v.deck.level)} · ${esc(v.deck.title)}</div>
+      <h2>${v.total?"Geschafft! Für heute alles gelernt.":"Heute ist nichts fällig."}</h2>
+      <p class="muted">${v.total?`${v.done} Bewertungen in dieser Runde. Die Karten kommen zurück, wenn du sie fast vergessen hast.`:"Komm morgen wieder oder übe mit dem Quiz."}</p>
+      <div class="row" style="justify-content:center"><button class="primary" data-act="home">Zur Übersicht</button>${stats(v.deck).g.der+stats(v.deck).g.die+stats(v.deck).g.das?`<button data-act="quiz" data-id="${esc(v.deck.id)}">der/die/das-Quiz</button>`:""}</div></div>`;
+    return;
+  }
+  const c=v.queue[v.pos],s=progress[c.key],left=v.queue.length-v.pos;
+  const pct=v.total?Math.min(100,(v.total-Math.min(left,v.total))/v.total*100):100;
+  const g=[["Nochmal","نعيد"],["Schwer","صعب"],["Gut","جيد"],["Leicht","سهل"]];
+  app.innerHTML=`
+    <div class="bar"><button class="ghost" data-act="home" aria-label="Zurück">← Zurück</button><div class="prog"><i style="width:${pct}%"></i></div><span class="count">${left} übrig</span></div>
+    <div class="flash ${v.flipped&&c.art?c.art:(settings.dir==="de"&&c.art?c.art:"")}" data-act="flip" tabindex="0" role="button" aria-label="Karte umdrehen">${cardBody(c,v.flipped)}</div>
+    ${v.flipped?`<div class="grades">${g.map((x,i)=>`<button class="g${i}" data-act="grade" data-g="${i}"><span>${x[0]}</span><span class="ar" lang="ar">${x[1]}</span><small>${ivLabel(schedule(s,i))}</small></button>`).join("")}</div>`
+      :`<button class="primary" data-act="flip">Antwort zeigen</button>`}
+    <p class="note keys">${esc(v.deck.level)} · ${esc(v.deck.title)}${s?"":" · neue Karte"}</p>`;
+}
+function grade(g){
+  const v=view,c=v.queue[v.pos];
+  progress[c.key]=schedule(progress[c.key],g);store.set("wk_progress",progress);bumpStreak();
+  if(g===0)v.queue.push(c);
+  v.pos++;v.done++;v.flipped=false;renderStudy();
+}
+
+/* ---------- der/die/das quiz ---------- */
+function startQuiz(id){
+  const dk=findDeck(id),nouns=shuffle(cardsOf(dk).filter(c=>["der","die","das"].includes(c.art))).slice(0,10);
+  view={name:"quiz",deck:dk,items:nouns,pos:0,score:0,answered:null,wrong:[]};renderQuiz();
+}
+function renderQuiz(){
+  const v=view;
+  if(v.pos>=v.items.length){
+    app.innerHTML=`<div class="done"><div class="label">der/die/das-Quiz · ${esc(v.deck.title)}</div>
+      <div class="big-score">${v.score}/${v.items.length}</div>
+      <p class="muted">${v.score===v.items.length?"Perfekt! Alle Artikel richtig.":"Diese Artikel solltest du wiederholen:"}</p>
+      ${v.wrong.length?`<p style="font-weight:700">${v.wrong.map(c=>`<span class="art ${c.art}">${c.art}</span> ${esc(c.word)}`).join(" · ")}</p>`:""}
+      <div class="row" style="justify-content:center"><button class="primary" data-act="quiz" data-id="${esc(v.deck.id)}">Noch einmal</button><button data-act="home">Zur Übersicht</button></div></div>`;
+    return;
+  }
+  const c=v.items[v.pos],a=v.answered;
+  app.innerHTML=`
+    <div class="bar"><button class="ghost" data-act="home">← Zurück</button><div class="prog"><i style="width:${v.pos/v.items.length*100}%"></i></div><span class="count">${v.pos+1}/${v.items.length}</span></div>
+    <div class="flash ${a?c.art:""}" style="cursor:default;min-height:240px;justify-content:center">
+      <div class="label" style="text-align:center">Welcher Artikel?</div>
+      <div class="qword"><span class="blank ${a?"show art "+c.art:""}">${a?c.art:"___"}</span>${esc(c.word)}</div>
+      <div class="ar" lang="ar" style="text-align:center;font-size:1.25rem;color:var(--muted)">${esc(c.ar)}</div>
+    </div>
+    <div class="abtn">${["der","die","das"].map((x,i)=>`<button class="${x} ${a&&(x===c.art||x===a)?"on":""}" data-act="ans" data-v="${x}" ${a?"disabled":""}>${x}</button>`).join("")}</div>
+    <div class="fb ${a?(a===c.art?"ok":"bad"):""}">${a?(a===c.art?"Richtig!":`Falsch – es heißt <span class="art ${c.art}">${c.art}</span> ${esc(c.word)}.`):""}</div>
+    ${a?`<button class="primary" data-act="next">Weiter</button>`:`<p class="note keys">Tasten 1, 2, 3</p>`}`;
+}
+function answer(x){const v=view;if(v.answered)return;const c=v.items[v.pos];v.answered=x;if(x===c.art)v.score++;else v.wrong.push(c);if(canSpeak)speak(full(c));renderQuiz()}
+
+/* ---------- Typing ---------- */
+function startType(id){const dk=findDeck(id);view={name:"type",deck:dk,items:shuffle(cardsOf(dk)).slice(0,10),pos:0,score:0,result:null,val:""};renderType()}
+const norm=s=>s.toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[.!?]/g,"").replace(/\s+/g," ").trim();
+function renderType(){
+  const v=view;
+  if(v.pos>=v.items.length){
+    app.innerHTML=`<div class="done"><div class="label">Schreiben · ${esc(v.deck.title)}</div><div class="big-score">${v.score}/${v.items.length}</div>
+      <p class="muted">Richtig geschrieben, mit Artikel.</p>
+      <div class="row" style="justify-content:center"><button class="primary" data-act="type" data-id="${esc(v.deck.id)}">Noch einmal</button><button data-act="home">Zur Übersicht</button></div></div>`;return;
+  }
+  const c=v.items[v.pos],r=v.result;
+  app.innerHTML=`
+    <div class="bar"><button class="ghost" data-act="home">← Zurück</button><div class="prog"><i style="width:${v.pos/v.items.length*100}%"></i></div><span class="count">${v.pos+1}/${v.items.length}</span></div>
+    <div class="flash ${r?c.art:""}" style="cursor:default;min-height:200px;justify-content:center;text-align:center">
+      <div class="label">Schreib das deutsche Wort${c.art?" mit Artikel":""}</div>
+      <div class="prompt-ar ar" lang="ar">${esc(c.ar)}</div><div class="prompt-en">${esc(c.en)}</div>
+      ${r?`<div class="word pop">${c.art?`<span class="art ${c.art}">${c.art}</span> `:""}${esc(c.word)}</div>`:""}
+    </div>
+    <form id="tform" class="row" style="flex-direction:column;align-items:stretch" autocomplete="off">
+      <label class="label" for="tin">Deine Antwort</label>
+      <input class="tin" id="tin" lang="de" spellcheck="false" autocapitalize="off" value="${esc(v.val)}" ${r?"readonly":""} placeholder="${c.art?"z. B. der Tisch":"z. B. kaufen"}">
+      ${r?"":`<div class="umlauts">${["ä","ö","ü","ß","Ä","Ö","Ü"].map(u=>`<button type="button" data-act="uml" data-v="${u}">${u}</button>`).join("")}</div>`}
+      <div class="fb ${r?r.cls:""}">${r?r.msg:""}</div>
+      ${r?`<button type="button" class="primary" data-act="tnext">Weiter</button>`:`<button class="primary" type="submit">Prüfen</button>`}
+    </form>`;
+  const inp=document.getElementById("tin");
+  if(!r)inp.focus();
+  inp.addEventListener("input",e=>v.val=e.target.value);
+  document.getElementById("tform").addEventListener("submit",e=>{e.preventDefault();checkType()});
+}
+function checkType(){
+  const v=view,c=v.items[v.pos],ans=norm(v.val);if(!ans)return;
+  const target=norm(full(c)).replace(/\s*\(.*?\)/g,""),wordOnly=norm(c.word).replace(/\s*\(.*?\)/g,"");
+  const a2=ans.replace(/\s*\(.*?\)/g,"");
+  if(a2===target){v.score++;v.result={cls:"ok",msg:"Richtig!"}}
+  else if(c.art&&a2===wordOnly){v.result={cls:"warn",msg:`Fast! Der Artikel fehlt: <span class="art ${c.art}">${c.art}</span>.`}}
+  else if(c.art&&a2.split(" ").slice(1).join(" ")===wordOnly){v.result={cls:"bad",msg:`Falscher Artikel. Richtig ist <span class="art ${c.art}">${c.art}</span>.`}}
+  else v.result={cls:"bad",msg:"Nicht ganz. Vergleiche mit der Lösung oben."};
+  if(canSpeak)speak(full(c));renderType();
+}
+
+/* ---------- Import ---------- */
+const SAMPLE="der Lehrer | die Lehrer | teacher | المعلم | Der Lehrer erklärt die Grammatik.\ndie Prüfung | die Prüfungen | exam | الامتحان | Die Prüfung ist am Freitag.\ndas Ergebnis | die Ergebnisse | result | النتيجة | Das Ergebnis kommt nächste Woche.\nlernen | lernt – lernte – hat gelernt | to learn | يتعلّم | Ich lerne jeden Tag Deutsch.";
+function parseList(text){
+  return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    const f=l.split(/\s*[|;\t]\s*/);let de=(f[0]||"").trim(),art="";
+    const m=de.match(/^(der|die|das)\s+(.+)$/i);if(m){art=m[1].toLowerCase();de=m[2]}
+    return [art,de,f[1]||"",f[2]||"",f[3]||"",f[4]||""];
+  }).filter(c=>c[1]&&(c[3]||c[4]));
+}
+function renderImport(){
+  app.innerHTML=`
+    <div class="bar"><button class="ghost" data-act="home">← Zurück</button></div>
+    <h2>Eigene Wortliste</h2>
+    <div class="panel">
+      <div class="field"><label class="label" for="iname">Name der Liste</label><input id="iname" placeholder="z. B. Lektion 5 – Schule"></div>
+      <div class="field"><label class="label" for="ilvl">Niveau</label><select id="ilvl"><option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option></select></div>
+      <div class="field"><label class="label" for="itext">Wörter, eins pro Zeile</label>
+        <p class="note" style="margin:0">Format: <code>Artikel Wort | Plural | Englisch | Arabisch | Beispielsatz</code>. Englisch oder Arabisch reicht, der Rest ist freiwillig. Du kannst auch eine Liste aus Excel einfügen.</p>
+        <textarea id="itext" lang="de" spellcheck="false">${esc(SAMPLE)}</textarea></div>
+      <div class="fb" id="imsg"></div>
+      <div class="row"><button class="primary" data-act="save">Liste speichern</button><button data-act="clear">Feld leeren</button></div>
+    </div>
+    <p class="note">Tipp für Lehrkräfte: Schicke deinen Schülern den Text der Liste (z. B. per WhatsApp). Sie fügen ihn hier ein und lernen sofort damit.</p>`;
+}
+function saveImport(){
+  const name=document.getElementById("iname").value.trim(),lvl=document.getElementById("ilvl").value,cards=parseList(document.getElementById("itext").value),msg=document.getElementById("imsg");
+  if(!name){msg.className="fb bad";msg.textContent="Gib der Liste bitte einen Namen.";return}
+  if(!cards.length){msg.className="fb bad";msg.textContent="Keine gültigen Zeilen gefunden. Jede Zeile braucht ein Wort und eine Bedeutung.";return}
+  custom.push({id:"c"+Date.now(),level:lvl,title:name,cards});store.set("wk_custom",custom);view={name:"home"};render();
+}
+function copyDeck(id,btn){
+  const dk=findDeck(id),txt=dk.cards.map(c=>[(c[0]?c[0]+" ":"")+c[1],c[2],c[3],c[4],c[5]].join(" | ")).join("\n");
+  const ok=()=>{btn.textContent="Kopiert ✓";setTimeout(()=>btn.textContent="Liste kopieren",1800)};
+  try{navigator.clipboard.writeText(txt).then(ok,()=>fallbackCopy(txt,btn))}catch(e){fallbackCopy(txt,btn)}
+}
+function fallbackCopy(txt,btn){const t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy");btn.textContent="Kopiert ✓"}catch(e){btn.textContent="Kopieren nicht möglich"}t.remove()}
+
+/* ---------- Events ---------- */
+function render(){({home:renderHome,study:renderStudy,quiz:renderQuiz,type:renderType,import:renderImport})[view.name]();window.scrollTo(0,0)}
+app.addEventListener("click",e=>{
+  const el=e.target.closest("[data-act]");if(!el)return;const act=el.dataset.act,id=el.dataset.id;
+  if(act!=="flip"&&el.classList.contains("flash"))return;
+  switch(act){
+    case "home":view={name:"home"};render();break;
+    case "study":startStudy(id);break;
+    case "quiz":startQuiz(id);break;
+    case "type":startType(id);break;
+    case "import":view={name:"import"};render();break;
+    case "dir":settings.dir=el.dataset.v;store.set("wk_settings",settings);renderHome();break;
+    case "flip":if(view.name==="study"&&!view.flipped){view.flipped=true;renderStudy()}break;
+    case "speak":e.stopPropagation();{const c=view.queue[view.pos];speak(full(c))}break;
+    case "grade":grade(+el.dataset.g);break;
+    case "ans":answer(el.dataset.v);break;
+    case "next":view.pos++;view.answered=null;renderQuiz();break;
+    case "uml":{const i=document.getElementById("tin"),p=i.selectionStart??i.value.length;i.value=i.value.slice(0,p)+el.dataset.v+i.value.slice(i.selectionEnd??p);view.val=i.value;i.focus();i.setSelectionRange(p+1,p+1)}break;
+    case "tnext":view.pos++;view.result=null;view.val="";renderType();break;
+    case "save":saveImport();break;
+    case "clear":document.getElementById("itext").value="";break;
+    case "copy":copyDeck(id,el);break;
+    case "del":
+      if(el.dataset.confirm){custom=custom.filter(d=>d.id!==id);store.set("wk_custom",custom);renderHome()}
+      else{el.dataset.confirm="1";el.textContent="Wirklich löschen?";el.style.color="var(--bad)"}
+      break;
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea,select"))return;
+  if(view.name==="study"&&view.pos<view.queue.length){
+    if((e.key===" "||e.key==="Enter")&&!view.flipped){e.preventDefault();view.flipped=true;renderStudy()}
+    else if(view.flipped&&["1","2","3","4"].includes(e.key))grade(+e.key-1);
+  }else if(view.name==="quiz"&&view.pos<view.items.length){
+    if(!view.answered&&["1","2","3"].includes(e.key))answer(["der","die","das"][+e.key-1]);
+    else if(view.answered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();view.pos++;view.answered=null;renderQuiz()}
+  }else if(view.name==="type"&&view.result&&e.key==="Enter"){view.pos++;view.result=null;view.val="";renderType()}
+});
+render();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
